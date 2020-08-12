@@ -1,4 +1,9 @@
-Seleccionar los atomos a graficar en formato Selective dyanmics
+Seleccionar los atomos a graficar en formato Selective dyanmics dentro del POSCAR
 
 compilar gaussiana.cpp como gaussian
+
+se necesita el archivo poscar del cual saca las coordenadas, obvio, tambien elprocar
+esta pensado para leer las eenergias de fermi del DOSCAR por lo que en principio tambien 
+seria necesario, sin embargo, en el procar las energias ya vienen desplazadas al nivel de fermi
+asi que ya no es necesario conocerla, esta opcioin esta desactivada (comentada en el codigo)
 
