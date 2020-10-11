@@ -2,8 +2,10 @@ Seleccionar los atomos a graficar en formato Selective dyanmics dentro del POSCA
 
 compilar gaussiana.cpp como gaussian
 
-se necesita el archivo poscar del cual saca las coordenadas, obvio, tambien elprocar
-esta pensado para leer las eenergias de fermi del DOSCAR por lo que en principio tambien 
-seria necesario, sin embargo, en el procar las energias ya vienen desplazadas al nivel de fermi
-asi que ya no es necesario conocerla, esta opcioin esta desactivada (comentada en el codigo)
+En el archivo colores se indica en el formato indicado ahí mismo los colores de los
+orbitales a graficar.
+
+Necesario colocar POSCAR, PROCAR, gaussian y colores en el mismo directorio que este
+script, en sus primeras líneas tiene variables que deben ser cambiadas por el usuario,
+tales como: el nombre del archivo *.png a generar, las etiquetas en los ejes, etc.
 
