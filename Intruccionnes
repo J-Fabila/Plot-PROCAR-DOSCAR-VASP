@@ -9,3 +9,7 @@ Necesario colocar POSCAR, PROCAR, gaussian y colores en el mismo directorio que 
 script, en sus primeras líneas tiene variables que deben ser cambiadas por el usuario,
 tales como: el nombre del archivo *.png a generar, las etiquetas en los ejes, etc.
 
+La palabra clave con la que el programa identifica a los átomos en el POSCAR es ""Cartesian""
+por lo que es importante que el poscar esté en ese formato o si está en formato Direct 
+simplemente cambiar la palabra Direct por Cartesian, incluso si las coordenadas no están
+en tal formato, ::eso es mucho muy importante::
