@@ -1,6 +1,6 @@
 Seleccionar los atomos a graficar en formato Selective dyanmics dentro del POSCAR
 
-compilar gaussiana.cpp como gaussian
+compilar gaussiana.cpp como gaussiana
 
 En el archivo colores se indica en el formato indicado ahí mismo los colores de los
 orbitales a graficar.
