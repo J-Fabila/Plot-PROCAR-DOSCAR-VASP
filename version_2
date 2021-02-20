@@ -7,6 +7,8 @@
 
                 #Se puede proporcionar el archivo DOSCAR y entonces este
                 #script lo leerá de ahi, en ese caso se deja   Efermi*=0
+# energia=$(grep " # occ.  0.00000" PROCAR | head -1 | awk '{print $5}')
+
 EfermiUp=0
 EfermiDown=0
 Draw_all=false  #This option will draw every single orbital of each atom
@@ -23,6 +25,7 @@ m_1=1             #Number of atom, which mark the initial bound to split
 m_2=108                 #Number of atom, which mark the end of first region
                      # end of second one
 m_3=113
+
 #m_4=
 ###### ACA DEPENDE DE SI ESCOGEMOS GRAFICARLO TODO O SELECCIONAR ALGUNOS
 #***************************** GNUPLOT ********************************#
@@ -33,7 +36,7 @@ AutomaticRange=false             #Utiliza el rango automático de gnuplot
                         #Si 'true' entonces se  inhabilita lo siguiente:
 xmin=-7           #Cota mínima del rango en X de la gráfica que generará
 xmax=7            #Cota máxima del rango en X de la gráfica que generará
-desv=0.1       #Ancho de las campanas gaussianas alrededor de cada punto
+desv=0.2       #Ancho de las campanas gaussianas alrededor de cada punto
 NombreScript=Script_gplot    #Se genera un script llamado 'NombreScript'
           #ése es modificable. Si la gráfica no es de agrado simplemente
                        #se   cambian los parámetros en él escritos, pero
@@ -186,6 +189,15 @@ do
       total_down=$(echo "${sum_down::-1}" | bc -l)
       echo $energia $total_down >> conjunto_${division}_down
    done
+
+   ./gaussiana conjunto_${division}_down $(wc -l conjunto_${division}_down | awk '{print $1}') $desv
+   cat salida.tmp  > conjunto_${division}_down
+   rm salida.tmp
+
+   ./gaussiana conjunto_${division}_up $(wc -l conjunto_${division}_up | awk '{print $1}') $desv
+   cat salida.tmp  > conjunto_${division}_up
+   rm salida.tmp
+
 done
 
 #***********************************************************************#
