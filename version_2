@@ -156,7 +156,7 @@ do
    rm atomo${i}_total_down.aux atomo${i}_total_down
 done
 
-for ((division=1;division<$(($Number_divisions+1));division++))
+for ((division=1;division<$(($number_divisions+1));division++))
 do
    lower=$(echo $((m_${division})))
    division=$(($division+1))
@@ -168,7 +168,7 @@ do
       #for ((ion=mark_($division);ion<mark_($division+1);ion++))
       for ((ion=$(echo $lower) ; ion < $(echo $upper) ; ion++))
       do
-         grep $energia atomo${ion}_total_up.dat | awk '{print $2}' >> sum_aux_file_up
+         grep $( sed "s/-//" <<< $energia ) atomo${ion}_total_up.dat | awk '{print $2}' >> sum_aux_file_up
       done
       sum_up=$(cat sum_aux_file_up | tr '\n' '+')
       total_up=$(echo "${sum_up::-1}" | bc -l)
@@ -180,7 +180,7 @@ do
       #for ((ion=mark_($division);ion<mark_($division+1);ion++))
       for ((ion=$(echo $lower) ; ion < $(echo $upper) ; ion++))
       do
-         grep $energia atomo${ion}_total_down.dat | awk '{print $2}' >> sum_aux_file_down
+         grep $( sed "s/-//" <<< $energia ) atomo${ion}_total_down.dat | awk '{print $2}' >> sum_aux_file_down
       done
       sum_down=$(cat sum_aux_file_down | tr '\n' '+')
       total_down=$(echo "${sum_down::-1}" | bc -l)
@@ -275,10 +275,19 @@ fi
 ####################################################################################
 if [ $split = "true" ]
 then
-for ((division=1;division<$(($Number_divisions+1));division++))
-do
-conjunto_${division}_up
-
+echo "split = $split $number_divisions"
+   for ((division=1;division<$(($number_divisions+1));division++))
+   do
+echo "entering ploting loop"
+      fileup=$(ls conjunto_${division}_up)
+      filedown=$(ls conjunto_${division}_down)
+      color=$(grep "region_${division}" colores | awk '{print $2}')
+      echo -n "\"${fileup}\" u 1:2 w filledcurve y=0 lt rgb " >> $NombreScript
+      echo -n " \"${color}\" notitle, " >> $NombreScript
+      echo -n "\"${filedown}\" u 1:2  w filledcurve y=0 lt rgb " >> $NombreScript
+      echo -n " \"$color\" notitle, " >> $NombreScript
+      echo  "$l (${tipo})    $(echo $j | cut -d "_" -f 2 )   $color "
+      echo -n "\"${fileup}\" u 1:2 w filledcurve y=0 lt rgb " >> $NombreScript
 done
 fi
 ####################################################################################
