@@ -54,12 +54,6 @@ NombreScript=Script_gplot    #Se genera un script llamado 'NombreScript'
 to_xyz POSCAR > poscar.xyz
 Nat=$(head -1 poscar.xyz )
 tail -$Nat poscar.xyz | awk '{print $1}' > elementos
-##### Obtiene la energía de Fermi #########
-#if [ -f DOSCAR ]
-#then
-#   EfermiUp=$(head -6 DOSCAR | tail -1 | awk '{print $3}')
-#   EfermiDown=$(head -6 DOSCAR | tail -1 | awk '{print $3}')
-#fi
 
 ##### Divide el archivo en 2: unopara spinup y otro para down
 nl=$(echo $(wc -l PROCAR | awk '{print $1}')/2 | bc)
@@ -68,10 +62,21 @@ head -$nl PROCAR > procar.up
 ##### Obtiene las energias para ambos espines
 grep  "energy" procar.up  | awk '{print $5}' > energias.up  #PROCAR-->$1
 grep  "energy" procar.down  | awk '{print $5}' > energias.down  #PROCAR-->$1
+# Obtiene la energia de Fermi
+EfermiUp=$(grep "# occ.  0.000" procar.up  | head -1 | awk '{print $5}')
+EfermiDown=$(grep "# occ.  0.000" procar.down  | head -1 | awk '{print $5}')
 #Agrega la energía de Fermi
-echo "awk '{print \$1-($EfermiUp)}' energias.up " | bash > energias_up
-echo "awk '{print \$1-($EfermiDown)}' energias.down " | bash > energias_down
-
+if [ $split = "true" ]
+then
+   cp energias.up energias_up
+   cp energias.down energias_down
+fi
+########################## DEJARLO PAL FINAL
+if [ $Draw_all = "true" ]
+then
+   echo "awk '{print \$1-($EfermiUp)}' energias.up " | bash > energias_up
+   echo "awk '{print \$1-($EfermiDown)}' energias.down " | bash > energias_down
+fi
 
 ##### Se generan todos los archivos individuales listos para graficar ###
 
@@ -193,11 +198,16 @@ do
    ./gaussiana conjunto_${division}_down $(wc -l conjunto_${division}_down | awk '{print $1}') $desv
    cat salida.tmp  > conjunto_${division}_down
    rm salida.tmp
+   echo "awk '{print \$1-($EfermiDown)}' conjunto_${division}_down " | bash > energias_shift_down
+   awk '{print $2}' conjunto_${division}_down > estados_down
+   paste energias_shift_down estados_down > conjunto_${division}_down
 
    ./gaussiana conjunto_${division}_up $(wc -l conjunto_${division}_up | awk '{print $1}') $desv
    cat salida.tmp  > conjunto_${division}_up
    rm salida.tmp
-
+   echo "awk '{print \$1-($EfermiUp)}' conjunto_${division}_up " | bash > energias_shift_up
+   awk '{print $2}' conjunto_${division}_up > estados_up
+   paste energias_shift_up estados_up > conjunto_${division}_up
 done
 
 #***********************************************************************#
@@ -299,7 +309,7 @@ echo "entering ploting loop"
       echo -n "\"${filedown}\" u 1:2  w filledcurve y=0 lt rgb " >> $NombreScript
       echo -n " \"$color\" notitle, " >> $NombreScript
       echo  "$l (${tipo})    $(echo $j | cut -d "_" -f 2 )   $color "
-      echo -n "\"${fileup}\" u 1:2 w filledcurve y=0 lt rgb " >> $NombreScript
+#      echo -n "\"${fileup}\" u 1:2 w filledcurve y=0 lt rgb " >> $NombreScript
 done
 fi
 ####################################################################################
