@@ -48,29 +48,41 @@ NombreScript=Script_gplot    #Se genera un script llamado 'NombreScript'
 #########################################################################
 ############################ TERMINA INPUT ##############################
 #########################################################################
-
-
+echo " Reading variables"
+echo " "
+echo "Obtaining atomic species"
+echo " "
 ###### Se obtienen los elementos ##########
 to_xyz POSCAR > poscar.xyz
 Nat=$(head -1 poscar.xyz )
 tail -$Nat poscar.xyz | awk '{print $1}' > elementos
 
+echo "Spliting PROCAR FILE into spin up/down"
+echo " "
 ##### Divide el archivo en 2: unopara spinup y otro para down
 nl=$(echo $(wc -l PROCAR | awk '{print $1}')/2 | bc)
 tail -$nl PROCAR > procar.down
 head -$nl PROCAR > procar.up
+echo "Obtaining energies"
+echo " "
 ##### Obtiene las energias para ambos espines
 grep  "energy" procar.up  | awk '{print $5}' > energias.up  #PROCAR-->$1
 grep  "energy" procar.down  | awk '{print $5}' > energias.down  #PROCAR-->$1
 # Obtiene la energia de Fermi
+echo "Reading Fermi energies (up/down)"
+echo " "
 EfermiUp=$(grep "# occ.  0.000" procar.up  | head -1 | awk '{print $5}')
 EfermiDown=$(grep "# occ.  0.000" procar.down  | head -1 | awk '{print $5}')
+echo " Fermi Up: $EfermiUp ; Fermi Down: $EfermiDown"
+echo " "
 #Agrega la energía de Fermi
 if [ $split = "true" ]
 then
    cp energias.up energias_up
    cp energias.down energias_down
 fi
+echo "Shifting to Fermi level"
+echo " "
 ########################## DEJARLO PAL FINAL
 if [ $Draw_all = "true" ]
 then
@@ -79,9 +91,11 @@ then
 fi
 
 ##### Se generan todos los archivos individuales listos para graficar ###
-
+echo "Spliting files to atoms/orbitals/spin"
+echo " "
 for ((i=1;i<$(($Nat+1));i++))
 do
+   echo "Atom  $i ..."
    # Desglosa los archivos por átomo por orbital por espín
    grep -A $Nat "ion " procar.up  | grep " $i " | awk '{print $2}' > atomo${i}_orbitals_up.aux
    grep -A $Nat "ion " procar.up  | grep " $i " | awk '{print $3}' > atomo${i}_orbitalp_up.aux
@@ -106,7 +120,7 @@ do
    echo "awk '{print \$1}' atomo${i}_total_up.aux " | bash > atomo${i}_total_up
    echo "awk '{print (-1.0)*\$1}' atomo${i}_total_down.aux " | bash > atomo${i}_total_down
 
-
+   echo "   Done! "
 ########################## ACA HABRA QUE AGREGAR UN FOR QUE ITERE SOBRE CADA TIPO DE ATOMO Y SUME TODO
    if [ $split = "true" ]
    then
@@ -163,9 +177,10 @@ do
    rm atomo${i}_total_up.aux atomo${i}_total_up
    rm atomo${i}_total_down.aux atomo${i}_total_down
 done
-
+echo "Grouping and summing up energies ..."
 for ((division=1;division<$(($number_divisions+1));division++))
 do
+   echo "Region / Division $division ..."
    lower=$(echo $((m_${division})))
    division=$(($division+1))
    upper=$(echo $((m_${division})))
@@ -176,7 +191,7 @@ do
       #for ((ion=mark_($division);ion<mark_($division+1);ion++))
       for ((ion=$(echo $lower) ; ion < $(echo $upper) ; ion++))
       do
-         grep $( sed "s/-//" <<< $energia ) atomo${ion}_total_up.dat | awk '{print $2}' >> sum_aux_file_up
+         grep -- $energia  atomo${ion}_total_up.dat | awk '{print $2}' >> sum_aux_file_up
       done
       sum_up=$(cat sum_aux_file_up | tr '\n' '+')
       total_up=$(echo "${sum_up::-1}" | bc -l)
@@ -188,13 +203,13 @@ do
       #for ((ion=mark_($division);ion<mark_($division+1);ion++))
       for ((ion=$(echo $lower) ; ion < $(echo $upper) ; ion++))
       do
-         grep $( sed "s/-//" <<< $energia ) atomo${ion}_total_down.dat | awk '{print $2}' >> sum_aux_file_down
+         grep -- $energia  atomo${ion}_total_down.dat | awk '{print $2}' >> sum_aux_file_down
       done
       sum_down=$(cat sum_aux_file_down | tr '\n' '+')
       total_down=$(echo "${sum_down::-1}" | bc -l)
       echo $energia $total_down >> conjunto_${division}_down
    done
-
+echo " Done!"
    ./gaussiana conjunto_${division}_down $(wc -l conjunto_${division}_down | awk '{print $1}') $desv
    cat salida.tmp  > conjunto_${division}_down
    rm salida.tmp
@@ -208,6 +223,22 @@ do
    echo "awk '{print \$1-($EfermiUp)}' conjunto_${division}_up " | bash > energias_shift_up
    awk '{print $2}' conjunto_${division}_up > estados_up
    paste energias_shift_up estados_up > conjunto_${division}_up
+
+#################################################################################
+# DESPUÉS DE ESTO DEBES AGREGAR OOOOTROO LOOOP QUE TE SUME LAS GAUSSIANAS
+   for  energia in $(cat conjunto_${division}_up   | sort -k1n | awk '{print $1}' | uniq | tr '\n' ' ')
+   do
+      sum_up=$(grep -- "$energia" | awk '{print $2}' | tr '\n' '+')
+      total_up=$(echo "${sum_up::-1}" | bc -l)
+      echo $energia $total_up   >> conjunto_${division}_up.dat
+   done
+   for  energia in $(cat conjunto_${division}_down | sort -k1n | awk '{print $1}' | uniq | tr '\n' ' ')
+   do
+      sum_down=$(grep -- "$energia" | awk '{print $2}' | tr '\n' '+')
+      total_down=$(echo "${sum_down::-1}" | bc -l)
+      echo $energia $total_down   >> conjunto_${division}_down.dat
+   done
+
 done
 
 #***********************************************************************#
@@ -301,8 +332,8 @@ echo "split = $split $number_divisions"
    for ((division=1;division<$(($number_divisions+1));division++))
    do
 echo "entering ploting loop"
-      fileup=$(ls conjunto_${division}_up)
-      filedown=$(ls conjunto_${division}_down)
+      fileup=$(ls conjunto_${division}_up.dat)
+      filedown=$(ls conjunto_${division}_down.dat)
       color=$(grep "region_${division}" colores | awk '{print $2}')
       echo -n "\"${fileup}\" u 1:2 w filledcurve y=0 lt rgb " >> $NombreScript
       echo -n " \"${color}\" notitle, " >> $NombreScript
@@ -318,3 +349,5 @@ fi
 
 gnuplot $NombreScript
 rm energias_up energias_down elementos procar.down procar.up poscar.xyz energias.up energias.down
+
+
