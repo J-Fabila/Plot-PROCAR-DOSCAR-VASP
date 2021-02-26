@@ -187,10 +187,12 @@ do
    division=$(($division-1))
    for  energia in $(cat energias_up | tr '\n'  ' ' )
    do
+      echo "---> Band $energia (Spin up)"
       rm sum_aux_file_up 2> /dev/null
       #for ((ion=mark_($division);ion<mark_($division+1);ion++))
       for ((ion=$(echo $lower) ; ion < $(echo $upper) ; ion++))
       do
+         echo "   ---> Ion $ion"
          grep -- $energia  atomo${ion}_total_up.dat | awk '{print $2}' >> sum_aux_file_up
       done
       sum_up=$(cat sum_aux_file_up | tr '\n' '+')
@@ -199,10 +201,12 @@ do
    done
    for  energia in $(cat energias_down | tr '\n'  ' ' )
    do
+      echo "---> Band $energia (Spin down)"
       rm sum_aux_file_down 2> /dev/null
       #for ((ion=mark_($division);ion<mark_($division+1);ion++))
       for ((ion=$(echo $lower) ; ion < $(echo $upper) ; ion++))
       do
+         echo "   ---> Ion $ion"
          grep -- $energia  atomo${ion}_total_down.dat | awk '{print $2}' >> sum_aux_file_down
       done
       sum_down=$(cat sum_aux_file_down | tr '\n' '+')
@@ -210,6 +214,8 @@ do
       echo $energia $total_down >> conjunto_${division}_down
    done
 echo " Done!"
+##############################################################
+####################### Verificado
    ./gaussiana conjunto_${division}_down $(wc -l conjunto_${division}_down | awk '{print $1}') $desv
    cat salida.tmp  > conjunto_${division}_down
    rm salida.tmp
@@ -223,23 +229,28 @@ echo " Done!"
    echo "awk '{print \$1-($EfermiUp)}' conjunto_${division}_up " | bash > energias_shift_up
    awk '{print $2}' conjunto_${division}_up > estados_up
    paste energias_shift_up estados_up > conjunto_${division}_up
-
+echo "Summing gaussians"
 #################################################################################
-# DESPUÉS DE ESTO DEBES AGREGAR OOOOTROO LOOOP QUE TE SUME LAS GAUSSIANAS
+#  DESPUÉS DE ESTO DEBES AGREGAR OOOOTROO LOOOP QUE TE SUME LAS GAUSSIANAS
    for  energia in $(cat conjunto_${division}_up   | sort -k1n | awk '{print $1}' | uniq | tr '\n' ' ')
    do
-      sum_up=$(grep -- "$energia" | awk '{print $2}' | tr '\n' '+')
-      total_up=$(echo "${sum_up::-1}" | bc -l)
+      echo "Energia: $energia ; Spin: Up"
+      sum_up=$(grep -- "$energia" conjunto_${division}_up | awk '{print $2}' | tr '\n' '+')
+      echo "sumup $sum_up"
+      total_up=$(echo "${sum_up::-1}" | tr 'e' 'E' | bc -l)
+      echo "totalup $total_up"
       echo $energia $total_up   >> conjunto_${division}_up.dat
    done
    for  energia in $(cat conjunto_${division}_down | sort -k1n | awk '{print $1}' | uniq | tr '\n' ' ')
    do
-      sum_down=$(grep -- "$energia" | awk '{print $2}' | tr '\n' '+')
-      total_down=$(echo "${sum_down::-1}" | bc -l)
+      echo "Energia: $energia ; Spin: Down"
+      sum_down=$(grep -- "$energia" conjunto_${division}_down | awk '{print $2}' | tr '\n' '+')
+      total_down=$(echo "${sum_down::-1}" | tr 'e' 'E' | bc -l)
       echo $energia $total_down   >> conjunto_${division}_down.dat
    done
 
 done
+echo "done"
 
 #***********************************************************************#
 #                      ESCRIBE SCRIPTS PARA GNUPLOT                     #
@@ -349,5 +360,4 @@ fi
 
 gnuplot $NombreScript
 rm energias_up energias_down elementos procar.down procar.up poscar.xyz energias.up energias.down
-
-
+okular muestra.png
