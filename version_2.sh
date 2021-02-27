@@ -1,4 +1,3 @@
-awk 'BEGIN {FS="\n"} ; {sum+=$1} END {print sum}' tem
 ########################################################################
 ############################### INPUT ##################################
 ########################################################################
@@ -231,25 +230,26 @@ echo " Done!"
    awk '{print $2}' conjunto_${division}_up > estados_up
    paste energias_shift_up estados_up > conjunto_${division}_up
 echo "Summing gaussians"
+#########################################################
+############## VERIFICAO ################################
 #################################################################################
 #  DESPUÉS DE ESTO DEBES AGREGAR OOOOTROO LOOOP QUE TE SUME LAS GAUSSIANAS
    for  energia in $(cat conjunto_${division}_up   | sort -k1n | awk '{print $1}' | uniq | tr '\n' ' ')
    do
       echo "Energia: $energia ; Spin: Up"
-      sum_up=$(grep -- "$energia" conjunto_${division}_up | awk '{print $2}' | tr '\n' '+')
-      echo "sumup $sum_up"
-      total_up=$(echo "${sum_up::-1}" | tr 'e' 'E' | bc -l)
+      grep -- "$energia" conjunto_${division}_up | awk '{print $2}' > sum_up
+      total_up=$(awk 'BEGIN {FS="\n"} ; {sum+=$1} END {print sum}' sum_up)
       echo "totalup $total_up"
       echo $energia $total_up   >> conjunto_${division}_up.dat
    done
    for  energia in $(cat conjunto_${division}_down | sort -k1n | awk '{print $1}' | uniq | tr '\n' ' ')
    do
       echo "Energia: $energia ; Spin: Down"
-      sum_down=$(grep -- "$energia" conjunto_${division}_down | awk '{print $2}' | tr '\n' '+')
-      total_down=$(echo "${sum_down::-1}" | tr 'e' 'E' | bc -l)
+      grep -- "$energia" conjunto_${division}_down | awk '{print $2}' > sum_down
+      total_down=$(awk 'BEGIN {FS="\n"} ; {sum+=$1} END {print sum}' sum_down)
+      echo "totaldown $total_down"
       echo $energia $total_down   >> conjunto_${division}_down.dat
    done
-
 done
 echo "done"
 
