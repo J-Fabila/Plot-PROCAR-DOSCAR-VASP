@@ -272,10 +272,15 @@ then
          rm sum_aux_up sum_aux_down 2> /dev/null
          for numero in $(seq $initial_atom $final_atom)
          do
+            echo "Calculating Energy:$energia ; Orbital:$orbital Number of atom:$numero ..."
             grep -- "$energia" atomo${numero}_orbital_${orbital}_up.dat >> sum_aux_up
             total_up=$(awk 'BEGIN {FS="\n"} ; {sum+=$1} END {print sum}' sum_aux_up)
+            echo " ---> Spin Up"
+            echo "      Done!"
             grep -- "$energia" atomo${numero}_orbital_${orbital}_down.dat >> sum_aux_down
             total_down=$(awk 'BEGIN {FS="\n"} ; {sum+=$1} END {print sum}' sum_aux_down)
+            echo " ---> Spin Down"
+            echo "      Done!"
          done
          echo $energia $total_up     >> group_${orbital}_${initial_atom}-${final_atom}_up.dat
          echo $energia $total_down   >> group_${orbital}_${initial_atom}-${final_atom}_down.dat
