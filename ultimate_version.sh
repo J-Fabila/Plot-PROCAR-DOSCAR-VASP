@@ -263,9 +263,6 @@ echo "done"
 
 if [ $group_by = "true" ]
 then
-   orbitales=" s p d"
-   initial_atom=100
-   final_atom=110
 
    for orbital in $orbitales
    do
