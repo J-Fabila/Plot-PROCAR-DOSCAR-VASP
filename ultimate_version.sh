@@ -269,7 +269,7 @@ then
       for energia in $(seq -20 0.1 20)
       #awk '{print $1}'  atomo8_orbital_d_up.dat  | sort -n | uniq | tr '\n' ' ')
       do
-         rm sum_aux_up sum_aux_down
+         rm sum_aux_up sum_aux_down 2> /dev/null
          for numero in $(seq $initial_atom $final_atom)
          do
             grep -- "$energia" atomo${numero}_orbital_${orbital}_up.dat >> sum_aux_up
