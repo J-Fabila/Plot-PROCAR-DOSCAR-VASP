@@ -76,8 +76,9 @@ grep  "energy" procar.down  | awk '{print $5}' > energias.down  #PROCAR-->$1
 # Obtiene la energia de Fermi
 echo "Reading Fermi energies (up/down)"
 echo " "
-EfermiUp=$(grep "# occ.  0.000" procar.up  | head -1 | awk '{print $5}')
-EfermiDown=$(grep "# occ.  0.000" procar.down  | head -1 | awk '{print $5}')
+#EfermiUp=$(grep "# occ.  0.000" procar.up  | head -1 | awk '{print $5}')
+EfermiUp=$(grep "# occ.  1.000" procar.up  | tail -1 | awk '{print $5}')
+EfermiDown=$(grep "# occ.  1.000" procar.down  | tail -1 | awk '{print $5}')
 echo " Fermi Up: $EfermiUp ; Fermi Down: $EfermiDown"
 echo " "
 #Agrega la energía de Fermi
